@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, MapPin, Car, DollarSign, CheckCircle, AlertTriangle, CreditCard, Phone, Globe, Calendar, Link as LinkIcon } from 'lucide-react';
+import { Send, MapPin, Car, DollarSign, CheckCircle, AlertTriangle, Phone, Globe, Calendar, Link as LinkIcon } from 'lucide-react';
 
 export default function BookingPortal() {
   const [status, setStatus] = useState('idle'); 
@@ -20,7 +20,7 @@ export default function BookingPortal() {
     dropoffDate: '',
     vehicleCategory: 'Compact Sedan',
     vehicleModel: '',
-    supplierName: 'Enterprise Rent A Car',
+    supplierName: '', 
     supplierAmount: '',
     agencyFee: ''
   });
@@ -179,6 +179,13 @@ export default function BookingPortal() {
             {/* SECTION 4: FINANCIALS */}
             <div className="p-4 bg-green-50 rounded-lg border border-green-100">
                <h3 className="font-semibold text-green-800 text-sm flex items-center gap-2 mb-3"><DollarSign size={16}/> Financials</h3>
+               
+               {/* SUPPLIER NAME INPUT FIELD */}
+               <div className="mb-4">
+                  <label className="block text-xs text-green-700 mb-1">Supplier/Vendor Name</label>
+                  <input required type="text" name="supplierName" value={formData.supplierName} onChange={handleChange} className="w-full p-2 border border-green-200 rounded" placeholder="e.g. Hertz, Avis, Alamo" />
+               </div>
+
                <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-xs text-green-700 mb-1">Supplier Cost</label>
