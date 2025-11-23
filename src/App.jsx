@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, MapPin, Car, DollarSign, CheckCircle, AlertTriangle, CreditCard, Phone, Globe, Calendar } from 'lucide-react';
+import { Send, MapPin, Car, DollarSign, CheckCircle, AlertTriangle, CreditCard, Phone, Globe, Calendar, Link as LinkIcon } from 'lucide-react';
 
 export default function BookingPortal() {
   const [status, setStatus] = useState('idle'); 
@@ -12,7 +12,8 @@ export default function BookingPortal() {
     guestName: '',
     guestEmail: '',
     guestPhone: '',
-    timezone: 'America/New_York', // Default timezone
+    logoUrl: '', 
+    timezone: 'America/New_York', 
     pickupLocation: '',
     pickupDate: '',
     dropoffLocation: '',
@@ -41,6 +42,7 @@ export default function BookingPortal() {
     setReviewLink('');
 
     try {
+      // Connects to your live Heroku backend
       const response = await fetch('https://carrentalemailservice-c73f9b7cf7b6.herokuapp.com/create-booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,8 +72,8 @@ export default function BookingPortal() {
           <div className="flex items-center gap-3 mb-8 border-b pb-4">
             <div className="bg-blue-600 p-3 rounded-lg text-white shadow-md"><Car size={28} /></div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">New Reservation</h1>
-              <p className="text-sm text-gray-500">Create Contract & Payment Link</p>
+              <h1 className="text-2xl font-bold text-gray-900">The Rental Radar</h1>
+              <p className="text-sm text-gray-500">Agent Booking Portal</p>
             </div>
           </div>
 
@@ -104,6 +106,13 @@ export default function BookingPortal() {
               </div>
             </div>
 
+            {/* BRANDING / LOGO */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+               <label className="block text-xs font-semibold text-gray-600 mb-1 flex items-center gap-2"><LinkIcon size={12}/> Company Logo URL (Optional)</label>
+               <input type="url" name="logoUrl" value={formData.logoUrl} onChange={handleChange} className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="https://your-website.com/logo.png" />
+               <p className="text-xs text-gray-400 mt-1">Paste a link to your logo. If left blank, the text "The Rental Radar" will be used.</p>
+            </div>
+
             {/* SECTION 2: TRIP LOGISTICS */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
               <div className="flex justify-between items-center mb-3">
@@ -118,7 +127,6 @@ export default function BookingPortal() {
                     <option value="America/Denver">Mountain Time (MT)</option>
                     <option value="America/Los_Angeles">Pacific Time (PT)</option>
                     <option value="America/Phoenix">Arizona</option>
-                    <option value="America/Anchorage">Alaska</option>
                     <option value="Pacific/Honolulu">Hawaii</option>
                   </select>
                 </div>
