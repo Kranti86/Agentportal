@@ -2,33 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Send, MapPin, Car, DollarSign, CheckCircle, AlertTriangle, Phone, Globe, Calendar, Link as LinkIcon, CreditCard, User, Mail, Hash, Briefcase, History, Trash2 } from 'lucide-react';
 
 export default function BookingPortal() {
-  // 🔴 CONFIGURATION
+  // 🔴 CONFIGURATION: Replace with your actual Backend URL
   const BACKEND_URL = 'https://carrentalemailservice-c73f9b7cf7b6.herokuapp.com'; 
 
   const [status, setStatus] = useState('idle'); 
   const [errorMessage, setErrorMessage] = useState('');
   const [reviewLink, setReviewLink] = useState('');
   const [paymentType, setPaymentType] = useState('prepaid');
-  const [activeTab, setActiveTab] = useState('new'); // 'new' or 'history'
+  const [activeTab, setActiveTab] = useState('new'); 
   const [history, setHistory] = useState([]);
 
-  // LOAD & CLEANUP HISTORY (30 DAYS)
   useEffect(() => {
     const rawHistory = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
     const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-    
-    // Filter: Keep only items newer than 30 days
-    const validHistory = rawHistory.filter(item => {
-        // If item has no timestamp (old version), keep it safe, otherwise check date
-        return item.timestamp ? item.timestamp > thirtyDaysAgo : true;
-    });
-
-    // Update State and Storage if cleanup happened
+    const validHistory = rawHistory.filter(item => item.timestamp ? item.timestamp > thirtyDaysAgo : true);
     setHistory(validHistory);
     if (rawHistory.length !== validHistory.length) {
         localStorage.setItem('bookingHistory', JSON.stringify(validHistory));
     }
-    
     const savedAgent = localStorage.getItem('agentName');
     if (savedAgent) setFormData(prev => ({ ...prev, agentName: savedAgent }));
   }, []);
@@ -56,14 +47,8 @@ export default function BookingPortal() {
   const supplierVal = parseFloat(formData.supplierAmount || 0);
   const agencyVal = parseFloat(formData.agencyFee || 0);
   const totalTripCost = (supplierVal + agencyVal).toFixed(2);
-  
-  const amountToChargeNow = paymentType === 'prepaid' 
-    ? totalTripCost 
-    : agencyVal.toFixed(2);
-    
-  const amountDueAtCounter = paymentType === 'prepaid' 
-    ? '0.00' 
-    : supplierVal.toFixed(2);
+  const amountToChargeNow = paymentType === 'prepaid' ? totalTripCost : agencyVal.toFixed(2);
+  const amountDueAtCounter = paymentType === 'prepaid' ? '0.00' : supplierVal.toFixed(2);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -89,7 +74,6 @@ export default function BookingPortal() {
         setStatus('success');
         setReviewLink(result.link); 
         
-        // SAVE TO HISTORY WITH TIMESTAMP
         const newRecord = {
             date: new Date().toLocaleDateString(),
             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
@@ -97,7 +81,7 @@ export default function BookingPortal() {
             conf: formData.confirmationNumber,
             amount: amountToChargeNow,
             link: result.link,
-            timestamp: Date.now() // Critical for 30-day cleanup
+            timestamp: Date.now()
         };
         const updatedHistory = [newRecord, ...history];
         setHistory(updatedHistory);
@@ -126,7 +110,7 @@ export default function BookingPortal() {
       
       {/* HEADER */}
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
-        <div className="max-w-3xl mx-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="bg-blue-600 p-2.5 rounded-lg text-white shadow-blue-200 shadow-md">
@@ -156,11 +140,15 @@ export default function BookingPortal() {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-8">
         
         {/* === TAB 1: NEW RESERVATION === */}
         {activeTab === 'new' && (
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* LEFT SIDE: FORM */}
+            <div className="lg:col-span-2">
+               <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* 1. AGENT INTERNAL */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -218,18 +206,20 @@ export default function BookingPortal() {
                     <option value="America/Chicago">Central Time</option>
                     <option value="America/Denver">Mountain Time</option>
                     <option value="America/Los_Angeles">Pacific Time</option>
+                    <option value="America/Phoenix">Arizona</option>
+                    <option value="Pacific/Honolulu">Hawaii</option>
                     </select>
                 </div>
                 </div>
                 <div className="p-6 grid grid-cols-2 gap-8">
                 <div className="space-y-3">
                     <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">PICK-UP</span>
-                    <input required name="pickupLocation" value={formData.pickupLocation} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm" placeholder="City or Airport" />
+                    <input required name="pickupLocation" value={formData.pickupLocation} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm" placeholder="City/Airport" />
                     <input required type="datetime-local" name="pickupDate" value={formData.pickupDate} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm text-slate-600" />
                 </div>
                 <div className="space-y-3">
                     <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded">DROP-OFF</span>
-                    <input required name="dropoffLocation" value={formData.dropoffLocation} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm" placeholder="City or Airport" />
+                    <input required name="dropoffLocation" value={formData.dropoffLocation} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm" placeholder="City/Airport" />
                     <input required type="datetime-local" name="dropoffDate" value={formData.dropoffDate} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg text-sm text-slate-600" />
                 </div>
                 </div>
@@ -245,6 +235,10 @@ export default function BookingPortal() {
                 <div className="col-span-2 mb-4">
                     <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Supplier Name</label>
                     <input required name="supplierName" value={formData.supplierName} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="e.g. Hertz, Avis" />
+                </div>
+                <div className="col-span-2 mb-4">
+                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Vehicle Model</label>
+                    <input required name="vehicleModel" value={formData.vehicleModel} onChange={handleChange} className="w-full p-2.5 border border-slate-200 rounded-lg" placeholder="e.g. Toyota Corolla" />
                 </div>
                 <div className="grid grid-cols-2 gap-5">
                     <input required type="number" step="0.01" name="supplierAmount" value={formData.supplierAmount} onChange={handleChange} className="w-full p-2.5 border border-green-200 rounded-lg" placeholder="Supplier Cost $" />
@@ -291,6 +285,52 @@ export default function BookingPortal() {
             )}
 
             </form>
+            </div>
+
+            {/* RIGHT SIDE: PREVIEW */}
+            <div className="hidden lg:block lg:col-span-1">
+                <div className="sticky top-24 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <h3 className="text-xs font-bold text-gray-500 uppercase mb-4 text-center">Customer Email Preview</h3>
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden text-sm">
+                        <div className="bg-blue-800 p-4 text-white text-center">
+                            <div className="font-bold text-lg">THE RENTAL RADAR</div>
+                            <div className="text-xs opacity-80 mt-1">CONFIRMATION #{formData.confirmationNumber || "..."}</div>
+                        </div>
+                        <div className="p-4 space-y-3">
+                            <p className="text-gray-600">Dear {formData.guestName.split(' ')[0] || "Guest"},</p>
+                            <div className="bg-gray-50 p-3 rounded border border-gray-100 text-xs space-y-2">
+                                <div className="font-bold text-gray-700 border-b pb-1 mb-1">ITINERARY ({formData.timezone})</div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <div className="text-gray-400 font-bold uppercase" style={{fontSize: '0.65rem'}}>Pick-up</div>
+                                        <div>{formData.pickupLocation || "..."}</div>
+                                        <div className="text-blue-600">{formData.pickupDate ? new Date(formData.pickupDate).toLocaleString() : ""}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-400 font-bold uppercase" style={{fontSize: '0.65rem'}}>Drop-off</div>
+                                        <div>{formData.dropoffLocation || "..."}</div>
+                                        <div className="text-blue-600">{formData.dropoffDate ? new Date(formData.dropoffDate).toLocaleString() : ""}</div>
+                                    </div>
+                                </div>
+                                <div className="border-t pt-2">
+                                    <div className="text-gray-400 font-bold uppercase" style={{fontSize: '0.65rem'}}>Vehicle provided by: {formData.supplierName || "..."}</div>
+                                    <div className="font-medium text-gray-800">{formData.vehicleCategory}: {formData.vehicleModel || "..."}</div>
+                                </div>
+                            </div>
+                            <div className="bg-gray-50 p-3 rounded border border-gray-100 text-xs">
+                                <div className="flex justify-between"><span>Total Trip Cost:</span> <strong>${totalTripCost}</strong></div>
+                                <div className="flex justify-between text-red-500 mt-1"><span>Payable to {formData.supplierName || "Supplier"}:</span> <strong>${amountDueAtCounter}</strong></div>
+                                <div className="flex justify-between text-green-600 font-bold mt-2 border-t pt-2"><span>DUE NOW:</span> <span>${amountToChargeNow}</span></div>
+                            </div>
+                            <div className="bg-blue-600 text-white text-center py-2 rounded font-bold text-xs mt-2">
+                                REVIEW CONTRACT & PAY ${amountToChargeNow}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
         )}
 
         {/* === TAB 2: HISTORY === */}
