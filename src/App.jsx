@@ -3,7 +3,7 @@ import { Send, MapPin, Car, DollarSign, CheckCircle, AlertTriangle, Phone, Globe
 
 export default function BookingPortal() {
   // 🔴 CONFIGURATION
-  const BACKEND_URL = 'https://carrentalmailpaypal-29674cf49d1b.herokuapp.com/'; 
+  const BACKEND_URL = 'https://carrentalemailservice-c73f9b7cf7b6.herokuapp.com'; 
 
   const [status, setStatus] = useState('idle'); 
   const [errorMessage, setErrorMessage] = useState('');
