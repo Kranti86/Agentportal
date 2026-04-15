@@ -35,7 +35,7 @@ export default function BookingPortal() {
     pickupDate: '',
     dropoffLocation: '',
     dropoffDate: '',
-    vehicleCategory: 'Compact Sedan',
+    vehicleCategory: '',
     vehicleModel: '',
     supplierName: '',
     supplierAmount: '',
