@@ -17,11 +17,22 @@ export default function BookingPortal() {
     const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
     const validHistory = rawHistory.filter(item => item.timestamp ? item.timestamp > thirtyDaysAgo : true);
     setHistory(validHistory);
+    
     if (rawHistory.length !== validHistory.length) {
         localStorage.setItem('bookingHistory', JSON.stringify(validHistory));
     }
+    
+    // 🟢 NEW: Pull both Agent Name AND Agent Phone from local storage
     const savedAgent = localStorage.getItem('agentName');
-    if (savedAgent) setFormData(prev => ({ ...prev, agentName: savedAgent }));
+    const savedPhone = localStorage.getItem('agentPhone');
+    
+    if (savedAgent || savedPhone) {
+      setFormData(prev => ({ 
+        ...prev, 
+        ...(savedAgent && { agentName: savedAgent }),
+        ...(savedPhone && { agentPhone: savedPhone })
+      }));
+    }
   }, []);
 
   const [formData, setFormData] = useState({
@@ -41,6 +52,7 @@ export default function BookingPortal() {
     supplierAmount: '',
     agencyFee: '',
     agentName: '',
+    agentPhone: '', // 🟢 NEW: Added field to state
     agentCommission: ''
   });
 
@@ -52,7 +64,10 @@ export default function BookingPortal() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    
+    // 🟢 NEW: Save phone to local storage alongside name
     if (e.target.name === 'agentName') localStorage.setItem('agentName', e.target.value);
+    if (e.target.name === 'agentPhone') localStorage.setItem('agentPhone', e.target.value);
   };
 
   const handleSubmit = async (e) => {
@@ -62,6 +77,7 @@ export default function BookingPortal() {
     setReviewLink('');
 
     try {
+      // The payload will automatically include agentPhone since it's in formData
       const response = await fetch(`${BACKEND_URL}/create-booking`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -99,7 +115,7 @@ export default function BookingPortal() {
   };
 
   const clearHistory = () => {
-      if(confirm("Are you sure you want to clear your local sales history?")) {
+      if(window.confirm("Are you sure you want to clear your local sales history?")) {
           setHistory([]);
           localStorage.removeItem('bookingHistory');
       }
@@ -156,15 +172,21 @@ export default function BookingPortal() {
                 <Briefcase size={18} className="text-slate-400"/>
                 <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Agent Internal</h3>
                 </div>
-                <div className="p-6 grid grid-cols-2 gap-5">
-                <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Agent Name</label>
-                    <input required name="agentName" value={formData.agentName} onChange={handleChange} className="w-full p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 focus:ring-2 focus:ring-yellow-500 outline-none" placeholder="Your Name" />
-                </div>
-                <div>
-                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Commission ($)</label>
-                    <input name="agentCommission" value={formData.agentCommission} onChange={handleChange} className="w-full p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 focus:ring-2 focus:ring-yellow-500 outline-none" placeholder="Hidden from Client" />
-                </div>
+                
+                {/* 🟢 NEW: Changed grid from 2 cols to 3 cols to fit the new field neatly */}
+                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+                  <div>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Agent Name</label>
+                      <input required name="agentName" value={formData.agentName} onChange={handleChange} className="w-full p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 focus:ring-2 focus:ring-yellow-500 outline-none" placeholder="Your Name" />
+                  </div>
+                  <div>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Direct Phone</label>
+                      <input required type="tel" name="agentPhone" value={formData.agentPhone} onChange={handleChange} className="w-full p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 focus:ring-2 focus:ring-yellow-500 outline-none" placeholder="+1 555 123 4567" />
+                  </div>
+                  <div>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Commission ($)</label>
+                      <input name="agentCommission" value={formData.agentCommission} onChange={handleChange} className="w-full p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 focus:ring-2 focus:ring-yellow-500 outline-none" placeholder="Hidden from Client" />
+                  </div>
                 </div>
             </div>
 
@@ -276,11 +298,18 @@ export default function BookingPortal() {
                 {!status.includes('loading') && <Send size={20}/>}
             </button>
 
+            {status === 'error' && (
+              <div className="bg-red-50 text-red-800 p-4 rounded-lg flex items-center gap-2">
+                <AlertTriangle size={20} className="text-red-500"/>
+                <span className="text-sm font-semibold">{errorMessage}</span>
+              </div>
+            )}
+
             {status === 'success' && (
                 <div className="bg-green-50 text-green-800 p-6 rounded-lg text-center mt-4">
                 <CheckCircle size={40} className="text-green-500 mx-auto mb-2"/>
                 <p className="font-bold">Success!</p>
-                <a href={reviewLink} target="_blank" className="text-sm font-bold text-blue-600 underline">Open Link</a>
+                <a href={reviewLink} target="_blank" rel="noreferrer" className="text-sm font-bold text-blue-600 underline">Open Link</a>
                 </div>
             )}
 
@@ -371,7 +400,7 @@ export default function BookingPortal() {
                                         <td className="px-6 py-3 font-mono text-slate-500 text-xs">{item.conf}</td>
                                         <td className="px-6 py-3 text-right font-bold text-green-600">${item.amount}</td>
                                         <td className="px-6 py-3 text-center">
-                                            <a href={item.link} target="_blank" className="text-blue-600 hover:text-blue-800 font-semibold text-xs">View Contract</a>
+                                            <a href={item.link} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 font-semibold text-xs">View Contract</a>
                                         </td>
                                     </tr>
                                 ))}
