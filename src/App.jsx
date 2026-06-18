@@ -180,7 +180,7 @@ export default function BookingPortal() {
                       <input required name="agentName" value={formData.agentName} onChange={handleChange} className="w-full p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 focus:ring-2 focus:ring-yellow-500 outline-none" placeholder="Your Name" />
                   </div>
                   <div>
-                      <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1">Direct Phone</label>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase mb-1.5 ml-1"> Agent Direct Phone</label>
                       <input required type="tel" name="agentPhone" value={formData.agentPhone} onChange={handleChange} className="w-full p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 focus:ring-2 focus:ring-yellow-500 outline-none" placeholder="+1 555 123 4567" />
                   </div>
                   <div>
